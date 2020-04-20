@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include <vector>
 
 class SingletonDatabase
 {
@@ -36,6 +37,24 @@ public:
         static SingletonDatabase db;
         return db;
     }
+
+    int getPopulation(const std::string& name)
+    {
+        return capitals[name];
+    }
 };
 
 int SingletonDatabase::instanceCount = 0;
+struct SingletonRecordFinder
+{
+    int totalPolulation(std::vector<std::string> names)
+    {
+        int result = 0;
+        for (auto& name : names)
+        {
+            result += SingletonDatabase::get().getPopulation(name);
+        }
+
+        return result;
+    }
+};

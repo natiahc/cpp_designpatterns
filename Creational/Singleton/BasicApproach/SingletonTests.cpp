@@ -9,6 +9,14 @@ TEST(DatabaseTests, IsSingletonTest)
     ASSERT_EQ(1, db, instanceCount);
 }
 
+TEST(RecordFinderTests, SingletonTotalPoplulationTest)
+{
+    SingletonRecordFinder rf;
+    std::vector<std::string> names{"London", "Berlin" };
+    int tp = rf.totalPolulation(names);
+    EXPECT_EQ(1614 + 1317, tp);
+}
+
 
 int main(int ac, char* av[])
 {
