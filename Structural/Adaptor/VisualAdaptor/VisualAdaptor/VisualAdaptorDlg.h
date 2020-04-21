@@ -8,6 +8,9 @@
 #include <memory>
 #include <map>
 
+#include <boost\accumulators\accumulators.hpp>
+#include <boost\accumulators\statistics.hpp>
+
 const std::vector<std::shared_ptr<VectorObject>> vectorObjects{
 	std::make_shared<VectorRectangle>(10, 10, 100, 100),
 	std::make_shared<VectorRectangle>(30, 30, 60, 60)
@@ -29,6 +32,14 @@ struct LineToPointCachingAdaptor
 
 		static int count = 0;
 		TRACE("%d: Generating points for line\n", count++);
+
+		std::vector<double> values{ 0,1,2,3,4,5,6 };
+		boost::accumulators::accumulator_set<double,
+			boost::accumulators::stats<boost::accumulators::tag::mean>> acc;
+		for (auto x : values)
+			acc(x);
+
+		TRACE("test %f test", boost::accumulators::mean(acc));
 
 		Points points;
 
