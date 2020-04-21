@@ -1,17 +1,34 @@
 #pragma once
 
 #include <vector>
+#include <boost\functional\hash.hpp>
 
 struct Point
 {
 	int x;
 	int y;
+
+	friend std::size_t hash_value(const Point& obj)
+	{
+		std::size_t seed = 0x1E4494FF;
+		boost::hash_combine(seed, obj.x);
+		boost::hash_combine(seed, obj.y);
+		return seed;
+	}
 };
 
 struct Line
 {
 	Point start;
 	Point end;
+
+	friend std::size_t hash_value(const Line& obj)
+	{
+		std::size_t seed = 0x52E4F080;
+		boost::hash_combine(seed, obj.start);
+		boost::hash_combine(seed, obj.end);
+		return seed;
+	}
 };
 
 struct VectorObject

@@ -12,6 +12,8 @@
 #endif
 
 
+std::map<size_t, std::vector<Point>> LineToPointCachingAdaptor::cache;
+
 // CAboutDlg dialog used for App About
 
 class CAboutDlg : public CDialogEx
@@ -152,7 +154,7 @@ void CVisualAdaptorDlg::OnPaint()
 		{
 			for (auto& l : *o)
 			{
-				LineToPointAdaptor lpo{ l };
+				LineToPointCachingAdaptor lpo{ l };
 				DrawPoints(dc, lpo.begin(), lpo.end());
 			}
 		}
@@ -170,6 +172,9 @@ HCURSOR CVisualAdaptorDlg::OnQueryDragIcon()
 
 LineToPointAdaptor::LineToPointAdaptor(Line & line)
 {
+	static int count = 0;
+	TRACE("%d: Generating points for line\n", count++);
+
 	int left = min(line.start.x, line.end.x);
 	int right = max(line.start.x, line.end.x);
 	int top = min(line.start.y, line.end.y);
