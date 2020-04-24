@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <type_traits>
 
 struct Shape
 {
@@ -10,8 +11,6 @@ struct Shape
 struct Circle : Shape
 {
     float radius;
-
-    Circle(){}
 
     explicit Circle(const float radius)
         : radius{radius}
@@ -34,6 +33,8 @@ struct Square : Shape
 {
     float side;
 
+    Square(){}
+
     explicit Square(const float side)
         : side(side)
     {}
@@ -49,9 +50,14 @@ struct Square : Shape
 template<typename T> 
 struct ColoredShape2 : T
 {
-    std::string color;
+    // to avoid misusing of with different interface class like for example
+    // struct NotAShape { virtual std::string() const { return std::strng(); } };
+    // ColoredShape2<NotAShape> legal; // which is completely legal
+    // to avoid this we can use static assert
+    static_assert(std::is_base_of<Shape,T>::value,
+        "Template argument must be a Shape");
 
-    ColoredShape2(){}
+    std::string color;
 
     explicit ColoredShape2(const std::string& color)
         : color{color}
@@ -70,10 +76,10 @@ struct TransparentShape2 : T
 {
     uint8_t transparency;
 
-    TransparentShape2(){}
-
-    explicit TransparentShape2(const uint8_t transparency)
-        : transparency{transparency}
+    template<typename...Args>
+    explicit TransparentShape2(const uint8_t transparency, Args ...args)
+        : T::T(args...),
+          transparency{transparency}
     {}
 
     std::string str() const override 
@@ -89,14 +95,7 @@ struct TransparentShape2 : T
 
 int main()
 {
-    ColoredShape2<Circle> red_circle{"red"};
-    red_circle.radius = 5;
-    std::cout << red_circle.str() << std::endl;
-
-    TransparentShape2<ColoredShape2<Circle>> red_half_transparent_circle{127};
-    red_half_transparent_circle.color = "red";
-    red_half_transparent_circle.radius = 100;
-    std::cout << red_half_transparent_circle.str() << std::endl;
-
+    TransparentShape2<Square> hidden_square{0, 15};
+    //std::cout << hidden_square.str() << std::endl;
     return 0;
 }
