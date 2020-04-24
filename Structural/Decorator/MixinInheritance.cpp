@@ -96,6 +96,6 @@ struct TransparentShape2 : T
 int main()
 {
     TransparentShape2<Square> hidden_square{0, 15};
-    //std::cout << hidden_square.str() << std::endl;
+    std::cout << hidden_square.str() << std::endl;
     return 0;
 }
