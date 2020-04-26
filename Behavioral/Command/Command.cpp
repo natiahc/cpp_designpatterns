@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 struct BankAccount
 {
@@ -52,6 +53,24 @@ struct Command
 
         }
     }
+
+    void undo() const
+    {
+        switch (action)
+        {
+
+        case withdraw: 
+            account.deposit(amount);
+            break;
+
+        case deposit: 
+            account.withdraw(amount);
+            break;
+
+        default: break;
+
+        }
+    }
 };
 
 int main()
@@ -62,8 +81,17 @@ int main()
         Command{ba, Command::withdraw, 200}  
     };
 
+    std::cout << ba.balance << std::endl;
+
     for (auto& cmd : commands)
         cmd.call();
+
+    std::cout << ba.balance << std::endl;
+
+    //undo
+    std::for_each(commands.rbegin(), commands.rend(),
+        [](const Command& cmd) { cmd.undo(); });
+    std::cout << ba.balance << std::endl;
 
     return 0;
 }
