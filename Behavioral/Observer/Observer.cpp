@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <mutex>
 #include <vector>
 
 #include <boost/any.hpp>
@@ -11,6 +12,8 @@ struct PersonListener
 	virtual void personChanged(Person& p, const std::string& propertyName,
 				const boost::any newValue) = 0;
 };
+
+static std::mutex mtx;
 
 struct Person 
 {
@@ -46,20 +49,47 @@ struct Person
 
 	void subscribe(PersonListener* pl)
 	{
-		listeners.push_back(pl);
+		std::lock_guard<std::mutex> guard{ mtx };
+		if(std::find(std::begin(listeners), std::end(listeners), pl) == std::end(listeners))
+			listeners.push_back(pl);
+	}
+
+	void unsubscribe(PersonListener* pl)
+	{
+		std::lock_guard<std::mutex> guard{ mtx };
+		for (auto it=listeners.begin(); it!=listeners.end(); it++)
+		{
+			if (*it = pl)
+				*it = nullptr;
+
+		}
 	}
 
 	void notify(const std::string& propertyName, const boost::any newValue)
 	{
+		std::lock_guard<std::mutex> guard{ mtx };
 		for (const auto listener : listeners)
 		{
-			listener->personChanged(*this, propertyName, newValue);
+			if(listener)
+				listener->personChanged(*this, propertyName, newValue);
 		}
+
+		listeners.erase(std::remove(listeners.begin(), listeners.end(), nullptr),
+			listeners.end());
 	}
 
 private:
 	int age;
 	std::vector<PersonListener*> listeners;
+};
+
+struct BadListener : PersonListener
+{
+	void personChanged(Person& p, const std::string& propertyName,
+		const boost::any newValue) override
+	{
+		p.unsubscribe(this);
+	}
 };
 
 struct ConsoleListener : PersonListener
@@ -85,9 +115,13 @@ int main()
 {
 	Person p{ 14 };
 	ConsoleListener cl;
+	//BadListener c1; // Reentrancy
+	p.subscribe(&cl);
 	p.subscribe(&cl);
 	p.setAge(15);
 	p.setAge(16);
+	p.unsubscribe(&cl);
+	p.setAge(17);
 
 	return 0;
 }
